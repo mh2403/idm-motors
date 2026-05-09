@@ -26,7 +26,7 @@ export function Navbar() {
             </a>
           ))}
         </nav>
-        <a href="tel:+32000000000" className="hidden md:inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full bg-foreground text-primary-foreground hover:opacity-90 transition">
+        <a href="tel:+32495159162" className="hidden md:inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full bg-foreground text-primary-foreground hover:opacity-90 transition">
           <Phone className="w-4 h-4" /> Bel direct
         </a>
         <button onClick={() => setOpen(!open)} className="md:hidden p-2" aria-label="Menu">
@@ -41,7 +41,7 @@ export function Navbar() {
                 {l.label}
               </a>
             ))}
-            <a href="tel:+32000000000" className="mt-2 inline-flex items-center justify-center gap-2 text-sm font-medium px-4 py-2 rounded-full bg-foreground text-primary-foreground">
+            <a href="tel:+32495159162" className="mt-2 inline-flex items-center justify-center gap-2 text-sm font-medium px-4 py-2 rounded-full bg-foreground text-primary-foreground">
               <Phone className="w-4 h-4" /> Bel direct
             </a>
           </nav>

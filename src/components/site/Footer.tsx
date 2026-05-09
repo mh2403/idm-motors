@@ -13,16 +13,17 @@ export function Footer() {
             Premium aankoop &amp; verkoop van wagens. Gratis expertise, eerlijke prijs, snelle service.
           </p>
           <div className="flex items-center gap-3 mt-6">
-            <a href="#" aria-label="Instagram" className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-gold hover:text-accent-foreground transition"><Instagram className="w-4 h-4" /></a>
+            <a href="https://www.instagram.com/idmgroep" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-gold hover:text-accent-foreground transition"><Instagram className="w-4 h-4" /></a>
             <a href="#" aria-label="Facebook" className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-gold hover:text-accent-foreground transition"><Facebook className="w-4 h-4" /></a>
           </div>
+          <p className="mt-6 text-xs text-muted-foreground">BTW: BE1025459452</p>
         </div>
         <div>
           <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Contact</h4>
           <ul className="mt-4 space-y-3 text-sm">
-            <li><a href="tel:+32000000000" className="flex items-center gap-3 hover:text-gold transition"><Phone className="w-4 h-4 text-gold" /> +32 (0)000 00 00 00</a></li>
-            <li><a href="mailto:info@idmmotors.be" className="flex items-center gap-3 hover:text-gold transition"><Mail className="w-4 h-4 text-gold" /> info@idmmotors.be</a></li>
-            <li className="flex items-center gap-3 text-muted-foreground"><MapPin className="w-4 h-4 text-gold" /> België — bezoek aan huis mogelijk</li>
+            <li><a href="tel:+32495159162" className="flex items-center gap-3 hover:text-gold transition"><Phone className="w-4 h-4 text-gold" /> +32 495 15 91 62</a></li>
+            <li><a href="mailto:Idmgroep@icloud.com" className="flex items-center gap-3 hover:text-gold transition"><Mail className="w-4 h-4 text-gold" /> Idmgroep@icloud.com</a></li>
+            <li className="flex items-center gap-3 text-muted-foreground"><MapPin className="w-4 h-4 text-gold" /> Zelestraat 42, 9160 Lokeren</li>
           </ul>
         </div>
         <div>
