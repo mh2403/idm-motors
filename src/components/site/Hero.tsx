@@ -28,7 +28,7 @@ export function Hero() {
               href="#aanbieden"
               className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-gold text-accent-foreground font-semibold shadow-glow hover:scale-[1.02] transition"
             >
-              Vraag vandaag nog een prijsvoorstel aan
+              Vraag prijsvoorstel aan
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition" />
             </a>
             <a
