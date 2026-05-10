@@ -44,6 +44,13 @@ Deno.serve(async (req) => {
   if (!resendApiKey || !toEmail) {
     return new Response("Missing mail secrets", { status: 500, headers: corsHeaders });
   }
+  const recipients = toEmail
+    .split(/[;,]/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+  if (!recipients.length) {
+    return new Response("Missing recipients", { status: 500, headers: corsHeaders });
+  }
 
   const payload = (await req.json()) as OfferPayload;
   const subject = `Nieuwe wagenaanvraag: ${payload.brand ?? ""} ${payload.model ?? ""}`.trim();
@@ -70,7 +77,7 @@ Deno.serve(async (req) => {
     },
     body: JSON.stringify({
       from: fromEmail,
-      to: [toEmail],
+      to: recipients,
       subject,
       html,
     }),
