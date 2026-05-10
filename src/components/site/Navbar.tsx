@@ -57,7 +57,7 @@ export function Navbar() {
               onClick={() => setOpen(false)}
               className="mt-1 inline-flex items-center justify-center text-sm font-medium px-4 py-2 rounded-full border border-border hover:bg-accent transition-colors"
             >
-              Admin login
+              Login
             </Link>
             <a href="tel:+32495159162" className="mt-2 inline-flex items-center justify-center gap-2 text-sm font-medium px-4 py-2 rounded-full bg-foreground text-primary-foreground">
               <Phone className="w-4 h-4" /> Bel direct

@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -28,9 +28,12 @@ type OfferRow = {
   contact_name: string | null;
   contact_email: string;
   contact_phone: string;
+  photos: string[];
   status: "new" | "contacted" | "closed";
   owner_note: string | null;
 };
+
+type OfferPhotoMap = Record<number, string[]>;
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -49,23 +52,11 @@ function AdminPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<OfferRow | null>(null);
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+  const [offerPhotoUrls, setOfferPhotoUrls] = useState<OfferPhotoMap>({});
 
   const formattedCount = useMemo(() => offers.length, [offers.length]);
 
-  useEffect(() => {
-    if (!supabase) return;
-    void refresh();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
-      void refresh();
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  async function refresh() {
+  const refresh = useCallback(async () => {
     if (!supabase) return;
     setChecking(true);
     const { data: sessionData } = await supabase.auth.getSession();
@@ -90,18 +81,56 @@ function AdminPage() {
     const { data, error } = await supabase
       .from("offers")
       .select(
-        "id, created_at, brand, model, year, mileage, fuel, transmission, asking_price, notes, contact_name, contact_email, contact_phone, status, owner_note",
+        "id, created_at, brand, model, year, mileage, fuel, transmission, asking_price, notes, contact_name, contact_email, contact_phone, photos, status, owner_note",
       )
       .order("created_at", { ascending: false });
 
     if (error) {
       toast.error("Kon aanvragen niet laden.");
       setOffers([]);
+      setOfferPhotoUrls({});
       setChecking(false);
       return;
     }
-    setOffers((data ?? []) as OfferRow[]);
+
+    const nextOffers = (data ?? []) as OfferRow[];
+    setOffers(nextOffers);
+    await hydrateOfferPhotos(nextOffers);
     setChecking(false);
+  }, []);
+
+  useEffect(() => {
+    if (!supabase) return;
+    void refresh();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      void refresh();
+    });
+
+    return () => subscription.unsubscribe();
+  }, [refresh]);
+
+  async function hydrateOfferPhotos(rows: OfferRow[]) {
+    if (!supabase) return;
+    const entries = await Promise.all(
+      rows.map(async (offer) => {
+        if (!offer.photos?.length) return [offer.id, []] as const;
+        const signedUrls = await Promise.all(
+          offer.photos.map(async (path) => {
+            const { data, error } = await supabase.storage
+              .from("offer-photos")
+              .createSignedUrl(path, 60 * 60 * 24);
+            if (error || !data?.signedUrl) return null;
+            return data.signedUrl;
+          }),
+        );
+        return [offer.id, signedUrls.filter((x): x is string => Boolean(x))] as const;
+      }),
+    );
+
+    setOfferPhotoUrls(Object.fromEntries(entries));
   }
 
   async function onLogin(e: FormEvent<HTMLFormElement>) {
@@ -143,13 +172,22 @@ function AdminPage() {
   async function deleteOffer(offerId: number) {
     if (!supabase) return;
     setDeletingId(offerId);
+    const targetOffer = offers.find((offer) => offer.id === offerId);
     const { error } = await supabase.from("offers").delete().eq("id", offerId);
     setDeletingId(null);
     if (error) {
       toast.error("Verwijderen mislukt.");
       return;
     }
+    if (targetOffer?.photos?.length) {
+      await supabase.storage.from("offer-photos").remove(targetOffer.photos);
+    }
     setOffers((prev) => prev.filter((offer) => offer.id !== offerId));
+    setOfferPhotoUrls((prev) => {
+      const next = { ...prev };
+      delete next[offerId];
+      return next;
+    });
     toast.success("Aanvraag verwijderd.");
   }
 
@@ -158,7 +196,8 @@ function AdminPage() {
       <div className="mx-auto max-w-3xl px-6 py-20">
         <h1 className="text-3xl font-bold">Admin</h1>
         <p className="mt-4 text-muted-foreground">
-          Supabase is nog niet geconfigureerd. Voeg `VITE_SUPABASE_URL` en `VITE_SUPABASE_ANON_KEY` toe.
+          Supabase is nog niet geconfigureerd. Voeg `VITE_SUPABASE_URL` en `VITE_SUPABASE_ANON_KEY`
+          toe.
         </p>
       </div>
     );
@@ -199,7 +238,10 @@ function AdminPage() {
             placeholder="Wachtwoord"
             className="w-full rounded-lg border border-border bg-input/60 px-4 py-2.5 text-sm"
           />
-          <button type="submit" className="w-full rounded-full bg-gold py-3 text-sm font-semibold text-black">
+          <button
+            type="submit"
+            className="w-full rounded-full bg-gold py-3 text-sm font-semibold text-black"
+          >
             Inloggen
           </button>
         </form>
@@ -220,7 +262,10 @@ function AdminPage() {
         <p className="mt-4 text-muted-foreground">
           Dit account staat niet als admin in de database.
         </p>
-        <button onClick={onLogout} className="mt-6 rounded-full border border-border px-5 py-2 text-sm">
+        <button
+          onClick={onLogout}
+          className="mt-6 rounded-full border border-border px-5 py-2 text-sm"
+        >
           Uitloggen
         </button>
       </div>
@@ -243,7 +288,10 @@ function AdminPage() {
           >
             Terug naar website
           </Link>
-          <button onClick={onLogout} className="rounded-full border border-border px-5 py-2 text-sm">
+          <button
+            onClick={onLogout}
+            className="rounded-full border border-border px-5 py-2 text-sm"
+          >
             Uitloggen
           </button>
         </div>
@@ -274,7 +322,30 @@ function AdminPage() {
                 Gewenste prijs: <span className="font-semibold">{offer.asking_price}</span>
               </p>
             ) : null}
-            {offer.notes ? <p className="mt-3 text-sm text-muted-foreground">{offer.notes}</p> : null}
+            {offer.notes ? (
+              <p className="mt-3 text-sm text-muted-foreground">{offer.notes}</p>
+            ) : null}
+
+            {offerPhotoUrls[offer.id]?.length ? (
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {offerPhotoUrls[offer.id].map((url, index) => (
+                  <a
+                    key={`${offer.id}-${index}`}
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block overflow-hidden rounded-lg border border-border"
+                  >
+                    <img
+                      src={url}
+                      alt={`Foto ${index + 1} van ${offer.brand} ${offer.model}`}
+                      className="h-28 w-full object-cover"
+                      loading="lazy"
+                    />
+                  </a>
+                ))}
+              </div>
+            ) : null}
 
             <div className="mt-4 grid gap-3 md:grid-cols-[180px_1fr_140px]">
               <select
@@ -319,7 +390,10 @@ function AdminPage() {
         ))}
       </div>
 
-      <AlertDialog open={Boolean(deleteTarget)} onOpenChange={(isOpen) => !isOpen && setDeleteTarget(null)}>
+      <AlertDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(isOpen) => !isOpen && setDeleteTarget(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Ben je zeker dat je deze aanvraag wil verwijderen?</AlertDialogTitle>
