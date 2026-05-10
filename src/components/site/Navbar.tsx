@@ -31,7 +31,7 @@ export function Navbar() {
             to="/admin"
             className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full border border-border hover:bg-accent transition-colors"
           >
-            Admin login
+            Login
           </Link>
           <a
             href="tel:+32495159162"
