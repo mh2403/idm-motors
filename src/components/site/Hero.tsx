@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 import heroCar from "@/assets/hero-car.jpg";
 
 export function Hero() {
@@ -15,10 +15,6 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-card/60 text-xs uppercase tracking-widest text-muted-foreground">
-            <Sparkles className="w-3.5 h-3.5 text-gold" />
-            Premium aankoop &amp; verkoop
-          </div>
           <h1 className="mt-6 text-4xl font-bold leading-[1.05] sm:text-5xl md:text-6xl lg:text-7xl">
             Wij kopen en verkopen wagens{" "}
             <span className="text-gold">snel, correct</span> en vrijblijvend.
