@@ -115,13 +115,32 @@ export function SubmitCarForm() {
       body: payload,
     });
 
+    const notesValue = parsed.data.notes?.trim() || "Niet ingevuld";
+    const notesShort =
+      notesValue.length > 240 ? `${notesValue.slice(0, 240)}...` : notesValue;
+    const photoInfo =
+      files.length > 0
+        ? `${files.length} foto('s) toegevoegd: ${files.map((file) => file.name).join(", ")}`
+        : "Geen foto's toegevoegd";
+
     const whatsAppMessage = [
       "Beste IDM Motors,",
       "ik heb zonet een aanvraag verstuurd via het formulier op jullie website.",
-      `Wagen: ${parsed.data.brand} ${parsed.data.model} (${parsed.data.year})`,
+      "",
+      "Gegevens aanvraag:",
+      `- Merk/model: ${parsed.data.brand} ${parsed.data.model}`,
+      `- Bouwjaar: ${parsed.data.year}`,
+      `- Kilometerstand: ${parsed.data.mileage}`,
+      `- Brandstof: ${parsed.data.fuel}`,
+      `- Versnellingsbak: ${parsed.data.transmission}`,
+      `- Gewenste prijs: ${parsed.data.price || "Niet ingevuld"}`,
       `Naam: ${parsed.data.name || "Niet ingevuld"}`,
       `E-mail: ${parsed.data.email}`,
       `Telefoon: ${parsed.data.phone}`,
+      `Beschrijving: ${notesShort}`,
+      `Foto's: ${photoInfo}`,
+      "",
+      "Ik kijk uit naar jullie reactie. Bedankt!",
     ].join("\n");
     setWhatsAppUrl(`https://wa.me/32495159162?text=${encodeURIComponent(whatsAppMessage)}`);
 
