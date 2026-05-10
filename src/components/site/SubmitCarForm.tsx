@@ -2,21 +2,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { z } from "zod";
-
-const schema = z.object({
-  brand: z.string().trim().min(1, "Merk is verplicht").max(50),
-  model: z.string().trim().min(1, "Model is verplicht").max(50),
-  year: z.string().regex(/^\d{4}$/, "Geldig bouwjaar (jjjj)"),
-  mileage: z.string().regex(/^\d+$/, "Enkel cijfers"),
-  fuel: z.string().min(1, "Kies brandstoftype"),
-  transmission: z.string().min(1, "Kies versnellingsbak"),
-  price: z.string().max(20).optional().or(z.literal("")),
-  notes: z.string().max(1000).optional().or(z.literal("")),
-  name: z.string().trim().max(80).optional().or(z.literal("")),
-  email: z.string().trim().email("Geldig e-mailadres vereist").max(255),
-  phone: z.string().trim().min(6, "Telefoonnummer vereist").max(30),
-});
+import { offerSchema } from "@/lib/offer-schema";
+import { hasSupabaseEnv, supabase } from "@/lib/supabase";
 
 const inputCls =
   "w-full bg-input/60 border border-border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/40 transition placeholder:text-muted-foreground/60";
@@ -29,15 +16,47 @@ export function SubmitCarForm() {
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
+    if ((form.get("website") as string)?.length) {
+      toast.error("Verzenden mislukt. Probeer opnieuw.");
+      return;
+    }
     const data = Object.fromEntries(form.entries());
-    const parsed = schema.safeParse(data);
+    const parsed = offerSchema.safeParse(data);
     if (!parsed.success) {
       toast.error(parsed.error.issues[0].message);
       return;
     }
+    if (!hasSupabaseEnv || !supabase) {
+      toast.error("Formulier is nog niet geconfigureerd.");
+      return;
+    }
     setSubmitting(true);
-    // TODO: backend submit (e-mail) wordt aangesloten zodra Lovable Cloud + e-maildomein actief zijn.
-    await new Promise((r) => setTimeout(r, 900));
+    const payload = {
+      brand: parsed.data.brand,
+      model: parsed.data.model,
+      year: Number(parsed.data.year),
+      mileage: Number(parsed.data.mileage),
+      fuel: parsed.data.fuel,
+      transmission: parsed.data.transmission,
+      asking_price: parsed.data.price || null,
+      notes: parsed.data.notes || null,
+      contact_name: parsed.data.name || null,
+      contact_email: parsed.data.email,
+      contact_phone: parsed.data.phone,
+      photos: files.map((file) => file.name),
+    };
+
+    const { error } = await supabase.from("offers").insert(payload);
+    if (error) {
+      setSubmitting(false);
+      toast.error("Aanvraag kon niet verzonden worden. Probeer opnieuw.");
+      return;
+    }
+
+    await supabase.functions.invoke("notify-offer", {
+      body: payload,
+    });
+
     setSubmitting(false);
     setDone(true);
     toast.success("Aanvraag verzonden! We nemen binnen 24u contact op.");
@@ -69,6 +88,7 @@ export function SubmitCarForm() {
 
   return (
     <form onSubmit={onSubmit} className="p-6 md:p-8 rounded-2xl bg-card border border-border shadow-elegant space-y-5">
+      <input type="text" name="website" autoComplete="off" tabIndex={-1} className="hidden" />
       <div className="grid sm:grid-cols-2 gap-4">
         <Field label="Merk *"><input name="brand" required className={inputCls} placeholder="bv. BMW" /></Field>
         <Field label="Model *"><input name="model" required className={inputCls} placeholder="bv. 320d" /></Field>

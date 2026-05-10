@@ -36,11 +36,11 @@ export function About() {
           </p>
           <div className="mt-8 grid grid-cols-3 gap-6 max-w-md">
             <div>
-              <div className="text-3xl font-bold text-gold">10+</div>
+              <div className="text-3xl font-bold text-gold">4+</div>
               <div className="text-xs text-muted-foreground mt-1">Jaar ervaring</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-gold">500+</div>
+              <div className="text-3xl font-bold text-gold">250+</div>
               <div className="text-xs text-muted-foreground mt-1">Tevreden klanten</div>
             </div>
             <div>
