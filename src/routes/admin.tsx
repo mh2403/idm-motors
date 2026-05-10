@@ -3,6 +3,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { hasSupabaseEnv, supabase } from "@/lib/supabase";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type OfferRow = {
   id: number;
@@ -36,6 +46,8 @@ function AdminPage() {
   const [password, setPassword] = useState("");
   const [offers, setOffers] = useState<OfferRow[]>([]);
   const [savingId, setSavingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<OfferRow | null>(null);
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
 
   const formattedCount = useMemo(() => offers.length, [offers.length]);
@@ -126,6 +138,19 @@ function AdminPage() {
       return;
     }
     toast.success("Opgeslagen.");
+  }
+
+  async function deleteOffer(offerId: number) {
+    if (!supabase) return;
+    setDeletingId(offerId);
+    const { error } = await supabase.from("offers").delete().eq("id", offerId);
+    setDeletingId(null);
+    if (error) {
+      toast.error("Verwijderen mislukt.");
+      return;
+    }
+    setOffers((prev) => prev.filter((offer) => offer.id !== offerId));
+    toast.success("Aanvraag verwijderd.");
   }
 
   if (!hasSupabaseEnv || !supabase) {
@@ -255,17 +280,22 @@ function AdminPage() {
               <select
                 value={offer.status}
                 onChange={(e) =>
-                  setOffers((prev) =>
-                    prev.map((x) =>
-                      x.id === offer.id ? { ...x, status: e.target.value as OfferRow["status"] } : x,
-                    ),
-                  )
+                  e.target.value === "__delete__"
+                    ? setDeleteTarget(offer)
+                    : setOffers((prev) =>
+                        prev.map((x) =>
+                          x.id === offer.id
+                            ? { ...x, status: e.target.value as OfferRow["status"] }
+                            : x,
+                        ),
+                      )
                 }
                 className="rounded-lg border border-border bg-input/60 px-3 py-2 text-sm"
               >
                 <option value="new">Nieuw</option>
                 <option value="contacted">Gecontacteerd</option>
                 <option value="closed">Afgerond</option>
+                <option value="__delete__">Verwijderen...</option>
               </select>
               <input
                 value={offer.owner_note ?? ""}
@@ -288,6 +318,34 @@ function AdminPage() {
           </article>
         ))}
       </div>
+
+      <AlertDialog open={Boolean(deleteTarget)} onOpenChange={(isOpen) => !isOpen && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ben je zeker dat je deze aanvraag wil verwijderen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deze actie kan niet ongedaan gemaakt worden.
+              {deleteTarget
+                ? ` (${deleteTarget.brand} ${deleteTarget.model} - ${deleteTarget.contact_email})`
+                : null}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingId != null}>Annuleren</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={(e) => {
+                e.preventDefault();
+                if (!deleteTarget) return;
+                void deleteOffer(deleteTarget.id).then(() => setDeleteTarget(null));
+              }}
+              disabled={deletingId != null}
+            >
+              {deletingId != null ? "Verwijderen..." : "Ja, verwijder"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
