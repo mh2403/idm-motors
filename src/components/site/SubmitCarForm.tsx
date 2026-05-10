@@ -35,7 +35,23 @@ export function SubmitCarForm() {
     const data = Object.fromEntries(form.entries());
     const parsed = offerSchema.safeParse(data);
     if (!parsed.success) {
-      toast.error(parsed.error.issues[0].message);
+      const firstIssue = parsed.error.issues[0];
+      const field = String(firstIssue.path[0] ?? "");
+      const fieldLabel: Record<string, string> = {
+        brand: "Merk",
+        model: "Model",
+        year: "Bouwjaar",
+        mileage: "Kilometerstand",
+        fuel: "Brandstof",
+        transmission: "Versnellingsbak",
+        price: "Gewenste prijs",
+        name: "Naam",
+        email: "E-mail",
+        phone: "Telefoon",
+        notes: "Beschrijving / opmerkingen",
+      };
+      const label = fieldLabel[field] ? `${fieldLabel[field]}: ` : "";
+      toast.error(`${label}${firstIssue.message}`);
       return;
     }
     if (!hasSupabaseEnv || !supabase) {
