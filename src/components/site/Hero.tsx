@@ -4,7 +4,7 @@ import heroCar from "@/assets/hero-car.jpg";
 
 export function Hero() {
   return (
-    <section id="top" className="relative pt-32 pb-24 overflow-hidden bg-hero grain">
+    <section id="top" className="relative overflow-hidden bg-hero grain pb-20 pt-28 md:pb-24 md:pt-32">
       <div
         className="absolute inset-0 opacity-50"
         style={{ background: "var(--gradient-radial)" }}
@@ -19,11 +19,11 @@ export function Hero() {
             <Sparkles className="w-3.5 h-3.5 text-gold" />
             Premium aankoop &amp; verkoop
           </div>
-          <h1 className="mt-6 text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05]">
+          <h1 className="mt-6 text-4xl font-bold leading-[1.05] sm:text-5xl md:text-6xl lg:text-7xl">
             Wij kopen en verkopen wagens{" "}
             <span className="text-gold">snel, correct</span> en vrijblijvend.
           </h1>
-          <p className="mt-6 text-lg text-muted-foreground max-w-xl">
+          <p className="mt-6 max-w-xl text-base text-muted-foreground sm:text-lg">
             Gratis expertise en gratis bezoek aan uw wagen — overal in België.
             Eerlijke prijs binnen 24u, directe afhandeling.
           </p>
@@ -42,7 +42,7 @@ export function Hero() {
               Onze voordelen
             </a>
           </div>
-          <div className="mt-10 flex items-center gap-6 text-sm text-muted-foreground">
+          <div className="mt-10 flex flex-wrap items-center gap-4 text-sm text-muted-foreground sm:gap-6">
             <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-gold" /> 100% vrijblijvend</div>
             <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-gold" /> Antwoord binnen 24u</div>
           </div>

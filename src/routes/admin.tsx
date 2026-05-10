@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { hasSupabaseEnv, supabase } from "@/lib/supabase";
 
@@ -149,6 +150,12 @@ function AdminPage() {
   if (!sessionEmail) {
     return (
       <div className="mx-auto max-w-md px-6 py-20">
+        <Link
+          to="/"
+          className="mb-6 inline-flex items-center rounded-full border border-border px-4 py-2 text-sm hover:bg-accent transition-colors"
+        >
+          Terug naar website
+        </Link>
         <h1 className="text-3xl font-bold">Admin login</h1>
         <form onSubmit={onLogin} className="mt-6 space-y-3">
           <input
@@ -178,6 +185,12 @@ function AdminPage() {
   if (!isAdmin) {
     return (
       <div className="mx-auto max-w-xl px-6 py-20">
+        <Link
+          to="/"
+          className="inline-flex items-center rounded-full border border-border px-4 py-2 text-sm hover:bg-accent transition-colors"
+        >
+          Terug naar website
+        </Link>
         <h1 className="text-3xl font-bold">Geen toegang</h1>
         <p className="mt-4 text-muted-foreground">
           Dit account staat niet als admin in de database.
@@ -198,9 +211,17 @@ function AdminPage() {
             Ingelogd als {sessionEmail} • {formattedCount} records
           </p>
         </div>
-        <button onClick={onLogout} className="rounded-full border border-border px-5 py-2 text-sm">
-          Uitloggen
-        </button>
+        <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
+          <Link
+            to="/"
+            className="inline-flex items-center rounded-full border border-border px-5 py-2 text-sm hover:bg-accent transition-colors"
+          >
+            Terug naar website
+          </Link>
+          <button onClick={onLogout} className="rounded-full border border-border px-5 py-2 text-sm">
+            Uitloggen
+          </button>
+        </div>
       </div>
 
       <div className="mt-8 space-y-4">
@@ -216,7 +237,7 @@ function AdminPage() {
                   {offer.fuel} • {offer.transmission}
                 </p>
               </div>
-              <div className="text-sm">
+              <div className="text-sm break-words">
                 <p>{offer.contact_name || "Naam niet ingevuld"}</p>
                 <p>{offer.contact_email}</p>
                 <p>{offer.contact_phone}</p>
@@ -259,7 +280,7 @@ function AdminPage() {
               <button
                 onClick={() => saveOffer(offer)}
                 disabled={savingId === offer.id}
-                className="rounded-full bg-gold px-4 py-2 text-sm font-semibold text-black disabled:opacity-60"
+                className="w-full rounded-full bg-gold px-4 py-2 text-sm font-semibold text-black disabled:opacity-60 md:w-auto"
               >
                 {savingId === offer.id ? "Opslaan..." : "Opslaan"}
               </button>
